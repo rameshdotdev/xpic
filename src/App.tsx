@@ -189,7 +189,7 @@ const DEFAULT_POST: PostData = {
   content:
     "Here's an idea 🧐 do something good and don't post about it on social media.\n\nBut if you really can't resist ... post it everywhere using Xpic!",
   date: "27 Mar, 2026",
-  time: "9:21 AM",
+  time: "09:21 AM",
   views: "1.1M",
   replies: "1.2K",
   reposts: "5.5K",
@@ -1639,7 +1639,7 @@ export default function App() {
                       onChange={(e) =>
                         setPostData({ ...postData, time: e.target.value })
                       }
-                      style={{ width: `${postData.time.length + 1}ch` }}
+                      style={{ width: `7ch` }}
                     />
                     <span>·</span>
                     <input
