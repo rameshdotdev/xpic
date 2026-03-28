@@ -199,7 +199,8 @@ const DEFAULT_POST: PostData = {
   quotedPost: {
     name: "X",
     handle: "X",
-    avatar: "https://picsum.photos/seed/x/200/200",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1955359038532653056/OSHY3ewP_400x400.jpg",
     content: "Welcome to the new era of social media. 𝕏",
     date: "24 Jul, 2023",
     isVerified: true,
