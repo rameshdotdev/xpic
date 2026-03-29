@@ -24,7 +24,7 @@ Xpics is a powerful, highly customizable tool for creating beautiful, high-quali
 ### 🛠️ Functionality
 - **Real Tweet Fetching**: Simply paste an X/Twitter URL to automatically fetch the post content, user info, and images.
 - **Interactive Editor**: Click and edit any text directly on the card (Name, Handle, Content, Date, Stats).
-- **Media Support**: Upload custom avatars and post images directly into the visual.
+- **Media Support**: Upload custom avatars, post images, and **short videos** directly into the visual.
 - **High-Quality Export**: Download your creations as PNG or JPG files with high pixel density.
 - **Quick Share**: One-click "Copy to Clipboard" to quickly paste your visual into other apps.
 
