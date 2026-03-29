@@ -11,7 +11,9 @@ import {
   Shield,
   Twitter,
   Github,
-  Instagram
+  Instagram,
+  Video,
+  Camera
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -70,10 +72,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, children }) =
             </div>
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-[0.95] mb-6">
               Turn X posts into <br />
-              <span className="text-primary">visual masterpieces.</span>
+              <span className="text-primary">stunning videos & images.</span>
             </h1>
             <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-10 leading-relaxed">
-              Stop sharing boring screenshots. Create stunning, high-quality visuals with beautiful backgrounds and custom layouts in seconds.
+              Stop sharing boring screenshots. Create stunning, high-quality visuals and motion videos with beautiful backgrounds and custom layouts in seconds.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button 
@@ -139,14 +141,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, children }) =
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: <Palette className="w-8 h-8 text-blue-500" />,
-                title: "Custom Backgrounds",
-                description: "Choose from beautiful gradients, solid colors, or upload your own image to match your brand."
+                icon: <Video className="w-8 h-8 text-red-500" />,
+                title: "Video Support",
+                description: "Upload short videos directly into your visuals. Perfect for sharing dynamic content and screen recordings."
               },
               {
-                icon: <Maximize2 className="w-8 h-8 text-purple-500" />,
-                title: "Social Presets",
-                description: "Perfectly sized for Instagram, Twitter, LinkedIn, and more. No more manual cropping."
+                icon: <Camera className="w-8 h-8 text-yellow-500" />,
+                title: "Frame Capture",
+                description: "Found a perfect moment in a video? Capture any frame instantly and turn it into a high-quality image."
               },
               {
                 icon: <Zap className="w-8 h-8 text-orange-500" />,
@@ -159,14 +161,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, children }) =
                 description: "Full support for quote retweets. Display the original context beautifully."
               },
               {
-                icon: <Smartphone className="w-8 h-8 text-pink-500" />,
-                title: "Mobile Ready",
-                description: "Create stunning visuals right from your phone. Responsive design at its best."
+                icon: <Palette className="w-8 h-8 text-blue-500" />,
+                title: "Custom Backgrounds",
+                description: "Choose from beautiful gradients, solid colors, or upload your own image to match your brand."
               },
               {
                 icon: <Shield className="w-8 h-8 text-indigo-500" />,
                 title: "High Quality",
-                description: "Export in high-resolution PNG or JPG formats. Crisp and clear on every screen."
+                description: "Export in high-resolution PNG, JPG, or MP4 formats. Crisp and clear on every screen."
               }
             ].map((feature, i) => (
               <Card key={i} className="p-8 rounded-[24px] border-border hover:shadow-lg transition-all group bg-card">
@@ -249,7 +251,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, children }) =
               },
               {
                 q: "What formats can I export in?",
-                a: "You can export your creations in high-quality PNG or JPG formats. PNG is recommended for the best quality and transparency support."
+                a: "You can export your creations in high-quality PNG or JPG formats. For video posts, you can export as an MP4 video file or capture a static frame as an image."
               },
               {
                 q: "Does it work with private accounts?",

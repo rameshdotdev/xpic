@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '../lib/utils';
 import { TweetCard } from './TweetCard';
+import { DesignSwitcher } from './sidebar/DesignSelection';
 import { PostData, Config } from '../types';
 
 interface PreviewAreaProps {
@@ -13,6 +14,7 @@ interface PreviewAreaProps {
   postData: PostData;
   setPostData: (data: PostData) => void;
   config: Config;
+  setConfig: React.Dispatch<React.SetStateAction<Config>>;
 }
 
 export const PreviewArea: React.FC<PreviewAreaProps> = ({
@@ -25,9 +27,14 @@ export const PreviewArea: React.FC<PreviewAreaProps> = ({
   postData,
   setPostData,
   config,
+  setConfig,
 }) => {
   return (
-    <main className="flex flex-col items-center gap-8">
+    <main className="flex flex-col items-center gap-6">
+      <div className="w-full max-w-md">
+        <DesignSwitcher config={config} setConfig={setConfig} />
+      </div>
+
       <div 
         ref={previewRef}
         className={cn(

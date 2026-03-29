@@ -16,18 +16,26 @@ export const TweetContent: React.FC<TweetContentProps> = ({
   config,
   videoRef,
 }) => {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  React.useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [postData.content]);
+
   return (
     <div className="space-y-3">
       <Textarea 
+        ref={textareaRef}
         className={cn(
-          "text-[23px] leading-[1.3] bg-transparent border-none p-0 focus:ring-0 resize-none min-h-[40px] overflow-hidden",
+          "text-[23px] leading-[1.3] !bg-transparent dark:!bg-transparent border-none p-0 focus:ring-0 resize-none min-h-[40px] overflow-hidden",
           config.isDarkMode ? "text-white" : "text-black"
         )}
         value={postData.content}
         onChange={(e) => {
           setPostData({ ...postData, content: e.target.value });
-          e.target.style.height = 'auto';
-          e.target.style.height = `${e.target.scrollHeight}px`;
         }}
         rows={1}
       />

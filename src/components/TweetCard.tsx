@@ -64,7 +64,6 @@ export const TweetCard: React.FC<TweetCardProps> = ({
 
       <TweetFooter 
         postData={postData}
-        setPostData={setPostData}
         config={config}
       />
     </motion.div>

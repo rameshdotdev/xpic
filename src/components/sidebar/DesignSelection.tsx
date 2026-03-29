@@ -4,127 +4,151 @@ import { cn } from '../../lib/utils';
 import { Config } from '../../types';
 import { PRESET_BACKGROUNDS } from '../../constants';
 
-interface DesignSelectionProps {
+interface DesignSwitcherProps {
+  config: Config;
+  setConfig: (config: Config) => void;
+}
+
+export const DesignSwitcher: React.FC<DesignSwitcherProps> = ({
+  config,
+  setConfig,
+}) => {
+  return (
+    <div className="flex items-center gap-3 bg-card/50 p-1.5 rounded-2xl border border-border/50 backdrop-blur-sm shadow-sm">
+      {/* Design 1: Only Tweet */}
+      <button
+        onClick={() => setConfig({ ...config, showBackground: false })}
+        className={cn(
+          "relative flex-1 aspect-[16/10] min-w-[100px] bg-card border-2 rounded-xl transition-all overflow-hidden group",
+          !config.showBackground ? "border-primary ring-4 ring-primary/10" : "border-border hover:border-muted-foreground/30"
+        )}
+      >
+        <div className="absolute inset-0 flex items-center justify-center p-2">
+          <div className="w-full space-y-1">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full bg-muted" />
+              <div className="h-1 w-8 bg-muted rounded-full" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="h-1 w-full bg-muted rounded-full" />
+              <div className="h-1 w-2/3 bg-muted rounded-full" />
+            </div>
+          </div>
+        </div>
+        {!config.showBackground && (
+          <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center">
+            <Check className="w-2 h-2 text-primary-foreground" />
+          </div>
+        )}
+      </button>
+
+      {/* Design 2: With Background */}
+      <button
+        onClick={() => setConfig({ ...config, showBackground: true })}
+        className={cn(
+          "relative flex-1 aspect-[16/10] min-w-[100px] bg-muted border-2 rounded-xl transition-all overflow-hidden group",
+          config.showBackground ? "border-primary ring-4 ring-primary/10" : "border-border hover:border-muted-foreground/30"
+        )}
+      >
+        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center p-2">
+          <div className="w-full bg-card rounded p-1.5 shadow-sm space-y-0.5 scale-90">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-muted" />
+              <div className="h-0.5 w-6 bg-muted rounded-full" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="h-0.5 w-full bg-muted rounded-full" />
+              <div className="h-0.5 w-1/2 bg-muted rounded-full" />
+            </div>
+          </div>
+        </div>
+        {config.showBackground && (
+          <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center">
+            <Check className="w-2 h-2 text-primary-foreground" />
+          </div>
+        )}
+      </button>
+    </div>
+  );
+};
+
+interface BackgroundSelectionProps {
   config: Config;
   setConfig: (config: Config) => void;
   backgroundInputRef: React.RefObject<HTMLInputElement | null>;
   handleBackgroundUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export const DesignSelection: React.FC<DesignSelectionProps> = ({
+export const BackgroundSelection: React.FC<BackgroundSelectionProps> = ({
   config,
   setConfig,
   backgroundInputRef,
   handleBackgroundUpload,
 }) => {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Select the design</h2>
-      <div className="grid grid-cols-2 gap-4">
-        {/* Design 1: Only Tweet */}
-        <button
-          onClick={() => setConfig({ ...config, showBackground: false })}
-          className={cn(
-            "relative aspect-square bg-card border-2 rounded-2xl transition-all overflow-hidden group",
-            !config.showBackground ? "border-primary ring-4 ring-primary/10" : "border-border hover:border-muted-foreground/30"
-          )}
-        >
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="w-full space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-muted" />
-                <div className="h-2 w-16 bg-muted rounded-full" />
-              </div>
-              <div className="space-y-1.5">
-                <div className="h-2 w-full bg-muted rounded-full" />
-                <div className="h-2 w-full bg-muted rounded-full" />
-                <div className="h-2 w-2/3 bg-muted rounded-full" />
-              </div>
-            </div>
-          </div>
-          {!config.showBackground && (
-            <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-              <Check className="w-3 h-3 text-primary-foreground" />
-            </div>
-          )}
-        </button>
-
-        {/* Design 2: With Background */}
-        <button
+  if (!config.showBackground) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 px-4 text-center space-y-3 bg-muted/30 rounded-xl border border-dashed border-border">
+        <Palette className="w-8 h-8 text-muted-foreground/50" />
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Background is disabled</p>
+          <p className="text-xs text-muted-foreground">Enable "With Background" design to customize styles.</p>
+        </div>
+        <button 
           onClick={() => setConfig({ ...config, showBackground: true })}
-          className={cn(
-            "relative aspect-square bg-muted border-2 rounded-2xl transition-all overflow-hidden group",
-            config.showBackground ? "border-primary ring-4 ring-primary/10" : "border-border hover:border-muted-foreground/30"
-          )}
+          className="text-xs font-bold text-primary hover:underline"
         >
-          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center p-6">
-            <div className="w-full bg-card rounded-lg p-3 shadow-sm space-y-2 scale-90">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-muted" />
-                <div className="h-1.5 w-12 bg-muted rounded-full" />
-              </div>
-              <div className="space-y-1">
-                <div className="h-1.5 w-full bg-muted rounded-full" />
-                <div className="h-1.5 w-full bg-muted rounded-full" />
-                <div className="h-1.5 w-1/2 bg-muted rounded-full" />
-              </div>
-            </div>
-          </div>
-          {config.showBackground && (
-            <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-              <Check className="w-3 h-3 text-primary-foreground" />
-            </div>
-          )}
+          Enable Background
         </button>
       </div>
+    );
+  }
 
-      {config.showBackground && (
-        <div className="space-y-3 p-4 bg-card border border-border rounded-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Palette className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Background Style</span>
-            </div>
-            <div 
-              className="w-8 h-8 rounded-full border-2 border-background shadow-sm cursor-pointer"
-              style={{ background: config.background }}
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {PRESET_BACKGROUNDS.map((bg) => (
-              <button
-                key={bg}
-                onClick={() => setConfig({ ...config, background: bg, customBackground: undefined })}
-                className={cn(
-                  "w-8 h-8 rounded-full border-2 transition-all hover:scale-110",
-                  (config.background === bg && !config.customBackground) ? "border-primary scale-110 shadow-md" : "border-transparent"
-                )}
-                style={{ background: bg }}
-              />
-            ))}
-            <button
-              onClick={() => backgroundInputRef.current?.click()}
-              className={cn(
-                "w-8 h-8 rounded-full border-2 border-dashed border-muted-foreground/50 flex items-center justify-center transition-all hover:scale-110 hover:border-primary overflow-hidden",
-                config.customBackground ? "border-primary scale-110 shadow-md" : ""
-              )}
-            >
-              {config.customBackground ? (
-                <img src={config.customBackground} alt="Custom" className="w-full h-full object-cover" />
-              ) : (
-                <Plus className="w-4 h-4 text-muted-foreground" />
-              )}
-            </button>
-            <input 
-              type="file" 
-              ref={backgroundInputRef} 
-              className="hidden" 
-              accept="image/*" 
-              onChange={handleBackgroundUpload} 
-            />
-          </div>
+  return (
+    <div className="space-y-3 p-4 bg-card border border-border rounded-xl">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Palette className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Background Style</span>
         </div>
-      )}
+        <div 
+          className="w-8 h-8 rounded-full border-2 border-background shadow-sm cursor-pointer"
+          style={{ background: config.background }}
+        />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {PRESET_BACKGROUNDS.map((bg) => (
+          <button
+            key={bg}
+            onClick={() => setConfig({ ...config, background: bg, customBackground: undefined })}
+            className={cn(
+              "w-8 h-8 rounded-full border-2 transition-all hover:scale-110",
+              (config.background === bg && !config.customBackground) ? "border-primary scale-110 shadow-md" : "border-transparent"
+            )}
+            style={{ background: bg }}
+          />
+        ))}
+        <button
+          onClick={() => backgroundInputRef.current?.click()}
+          className={cn(
+            "w-8 h-8 rounded-full border-2 border-dashed border-muted-foreground/50 flex items-center justify-center transition-all hover:scale-110 hover:border-primary overflow-hidden",
+            config.customBackground ? "border-primary scale-110 shadow-md" : ""
+          )}
+        >
+          {config.customBackground ? (
+            <img src={config.customBackground} alt="Custom" className="w-full h-full object-cover" />
+          ) : (
+            <Plus className="w-4 h-4 text-muted-foreground" />
+          )}
+        </button>
+        <input 
+          type="file" 
+          ref={backgroundInputRef} 
+          className="hidden" 
+          accept="image/*" 
+          onChange={handleBackgroundUpload} 
+        />
+      </div>
     </div>
   );
 };
+

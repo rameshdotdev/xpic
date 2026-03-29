@@ -35,7 +35,7 @@ export const QuotedPostControls: React.FC<QuotedPostControlsProps> = ({
           type="text" 
           placeholder="Name"
           className={cn(
-            "w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500/20 transition-colors",
+            "w-full px-4 py-3 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500/20 transition-colors",
             config.isDarkMode ? "bg-black/20 border-white/10 text-white placeholder:text-white/30" : "bg-white border-[#EFF3F4] text-black"
           )}
           value={postData.quotedPost.name}
@@ -48,7 +48,7 @@ export const QuotedPostControls: React.FC<QuotedPostControlsProps> = ({
           type="text" 
           placeholder="Handle"
           className={cn(
-            "w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500/20 transition-colors",
+            "w-full px-4 py-3 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500/20 transition-colors",
             config.isDarkMode ? "bg-black/20 border-white/10 text-white placeholder:text-white/30" : "bg-white border-[#EFF3F4] text-black"
           )}
           value={postData.quotedPost.handle}
@@ -61,7 +61,7 @@ export const QuotedPostControls: React.FC<QuotedPostControlsProps> = ({
           type="text" 
           placeholder="Date"
           className={cn(
-            "w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500/20 transition-colors",
+            "w-full px-4 py-3 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500/20 transition-colors",
             config.isDarkMode ? "bg-black/20 border-white/10 text-white placeholder:text-white/30" : "bg-white border-[#EFF3F4] text-black"
           )}
           value={postData.quotedPost.date}
@@ -105,8 +105,8 @@ export const QuotedPostControls: React.FC<QuotedPostControlsProps> = ({
         <Textarea 
           placeholder="Content"
           className={cn(
-            "w-full px-3 py-2 text-sm rounded-xl focus:ring-2 focus:ring-primary/20 resize-none transition-colors",
-            config.isDarkMode ? "bg-black/20 border-white/10 text-white placeholder:text-white/30" : "bg-card border-border text-black"
+            "w-full px-4 py-3 text-sm rounded-xl focus:ring-2 focus:ring-primary/20 resize-none transition-colors",
+            config.isDarkMode ? "bg-black/20 border-white/10 text-white placeholder:text-white/30" : "bg-white border-[#EFF3F4] text-black"
           )}
           rows={3}
           value={postData.quotedPost.content}

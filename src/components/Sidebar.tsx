@@ -19,7 +19,12 @@ import {
   Download,
   Copy,
   Share2,
-  Coffee
+  Coffee,
+  ChevronDown,
+  ChevronUp,
+  Settings2,
+  BarChart3,
+  Quote
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Button } from "@/components/ui/button";
@@ -28,15 +33,17 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { motion, AnimatePresence } from 'motion/react';
 import { PostData, Config, AspectRatio, ExportFormat } from '../types';
 import { PRESET_BACKGROUNDS, ASPECT_RATIOS } from '../constants';
 import { XLogo } from './tweet/TweetComponents';
 
 import { MediaControls } from './sidebar/MediaControls';
-import { DesignSelection } from './sidebar/DesignSelection';
+import { BackgroundSelection } from './sidebar/DesignSelection';
 import { CustomizationControls } from './sidebar/CustomizationControls';
 import { QuotedPostControls } from './sidebar/QuotedPostControls';
 import { ActionButtons } from './sidebar/ActionButtons';
+import { StatsControls } from './sidebar/StatsControls';
 
 export function Toggle({ 
   icon, 
@@ -50,12 +57,56 @@ export function Toggle({
   onChange: (val: boolean) => void 
 }) {
   return (
-    <div className="flex items-center justify-between p-4 bg-card border border-border rounded-xl">
+    <div className="flex items-center justify-between p-3 bg-card border border-border rounded-xl">
       <div className="flex items-center gap-3">
         <div className="text-muted-foreground">{icon}</div>
         <span className="text-sm font-medium">{label}</span>
       </div>
       <Switch checked={active} onCheckedChange={onChange} />
+    </div>
+  );
+}
+
+function CollapsibleSection({ 
+  title, 
+  icon, 
+  children, 
+  defaultOpen = false 
+}: { 
+  title: string; 
+  icon: React.ReactNode; 
+  children: React.ReactNode; 
+  defaultOpen?: boolean;
+}) {
+  const [isOpen, setIsOpen] = React.useState(defaultOpen);
+
+  return (
+    <div className="border border-border rounded-2xl bg-card/50 overflow-hidden">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="text-muted-foreground">{icon}</div>
+          <span className="text-sm font-bold uppercase tracking-widest">{title}</span>
+        </div>
+        {isOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="p-4 pt-0 space-y-4">
+              <div className="h-px bg-border mb-4" />
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -83,6 +134,7 @@ interface SidebarProps {
   handleDownload: () => void;
   handleDownloadVideo: () => void;
   isExportingVideo: boolean;
+  isVideoLoading: boolean;
   exportProgress: number;
   DEFAULT_POST: PostData;
 }
@@ -110,13 +162,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
   handleDownload,
   handleDownloadVideo,
   isExportingVideo,
+  isVideoLoading,
   exportProgress,
   DEFAULT_POST
 }) => {
   return (
-    <aside className="space-y-8">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight">Generate X Screenshots</h1>
+    <aside className="space-y-6">
+      <header className="flex items-center justify-between">
+        <h1 className="text-xl font-bold tracking-tight">X Screenshot</h1>
+        <button 
+          onClick={() => {
+            setConfig({
+              background: PRESET_BACKGROUNDS[0],
+              isDarkMode: true,
+              aspectRatio: '1:1',
+              showIcon: true,
+              showUsername: true,
+              showVerified: true,
+              showDateTime: true,
+              showResponses: true,
+              padding: 64,
+              rounded: 24,
+              exportFormat: 'png',
+              showQuotedPost: false,
+              customWidth: 600,
+              customHeight: 600,
+              showBackground: true,
+            });
+            setPostData(DEFAULT_POST);
+          }}
+          className="text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary/80 transition-colors"
+        >
+          Reset
+        </button>
       </header>
 
       {/* URL Input */}
@@ -127,8 +205,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <Input 
             type="text" 
-            placeholder="Paste the link of the post"
-            className="pl-11 py-6 bg-card border-border rounded-xl shadow-sm"
+            placeholder="Paste post link..."
+            className="pl-11 py-5 bg-card border-border rounded-xl shadow-sm text-sm"
             value={postUrl}
             onChange={(e) => setPostUrl(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchTweet()}
@@ -138,84 +216,75 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={fetchTweet}
           disabled={isLoading}
           variant="outline"
-          className="h-auto py-4 px-6 rounded-xl"
+          className="h-auto py-3 px-4 rounded-xl text-sm"
         >
-          {isLoading ? 'Fetching...' : 'Fetch'}
+          {isLoading ? '...' : 'Fetch'}
         </Button>
       </div>
 
-      <MediaControls 
-        fileInputRef={fileInputRef}
-        videoInputRef={videoInputRef}
-        handleImageUpload={handleImageUpload}
-        handleVideoUpload={handleVideoUpload}
-        captureVideoFrame={captureVideoFrame}
-        postData={postData}
-        setPostData={setPostData}
-      />
+      <div className="space-y-4">
+        <CollapsibleSection title="Media" icon={<ImageIcon className="w-4 h-4" />} defaultOpen={true}>
+          <MediaControls 
+            fileInputRef={fileInputRef}
+            videoInputRef={videoInputRef}
+            handleImageUpload={handleImageUpload}
+            handleVideoUpload={handleVideoUpload}
+            captureVideoFrame={captureVideoFrame}
+            postData={postData}
+            setPostData={setPostData}
+            isVideoLoading={isVideoLoading}
+          />
+        </CollapsibleSection>
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Customize</h2>
-          <button 
-            onClick={() => {
-              setConfig({
-                background: PRESET_BACKGROUNDS[0],
-                isDarkMode: true,
-                aspectRatio: '1:1',
-                showIcon: true,
-                showUsername: true,
-                showVerified: true,
-                showDateTime: true,
-                showResponses: true,
-                padding: 64,
-                rounded: 24,
-                exportFormat: 'png',
-                showQuotedPost: false,
-                customWidth: 600,
-                customHeight: 600,
-                showBackground: true,
-              });
-              setPostData(DEFAULT_POST);
-            }}
-            className="text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary/80 transition-colors"
-          >
-            Reset
-          </button>
-        </div>
-        
-        <DesignSelection 
-          config={config}
-          setConfig={setConfig}
-          backgroundInputRef={backgroundInputRef}
-          handleBackgroundUpload={handleBackgroundUpload}
-        />
+        <CollapsibleSection title="Design" icon={<Palette className="w-4 h-4" />}>
+          <BackgroundSelection 
+            config={config}
+            setConfig={setConfig}
+            backgroundInputRef={backgroundInputRef}
+            handleBackgroundUpload={handleBackgroundUpload}
+          />
+        </CollapsibleSection>
 
-        <CustomizationControls 
-          config={config}
-          setConfig={setConfig}
-          setTheme={setTheme}
-        />
+        <CollapsibleSection title="Layout" icon={<Settings2 className="w-4 h-4" />}>
+          <CustomizationControls 
+            config={config}
+            setConfig={setConfig}
+            setTheme={setTheme}
+          />
+        </CollapsibleSection>
+
+        <CollapsibleSection title="Stats" icon={<BarChart3 className="w-4 h-4" />}>
+          <StatsControls 
+            postData={postData}
+            setPostData={setPostData}
+          />
+        </CollapsibleSection>
+
+        {config.showQuotedPost && (
+          <CollapsibleSection title="Quote" icon={<Quote className="w-4 h-4" />} defaultOpen={true}>
+            <QuotedPostControls 
+              postData={postData}
+              setPostData={setPostData}
+              quotedAvatarInputRef={quotedAvatarInputRef}
+              handleQuotedAvatarUpload={handleQuotedAvatarUpload}
+              config={config}
+            />
+          </CollapsibleSection>
+        )}
       </div>
 
-      <QuotedPostControls 
-        postData={postData}
-        setPostData={setPostData}
-        quotedAvatarInputRef={quotedAvatarInputRef}
-        handleQuotedAvatarUpload={handleQuotedAvatarUpload}
-        config={config}
-      />
-
-      <ActionButtons 
-        config={config}
-        setConfig={setConfig}
-        handleCopy={handleCopy}
-        handleDownload={handleDownload}
-        handleDownloadVideo={handleDownloadVideo}
-        isExportingVideo={isExportingVideo}
-        exportProgress={exportProgress}
-        postData={postData}
-      />
+      <div className="pt-4 border-t border-border">
+        <ActionButtons 
+          config={config}
+          setConfig={setConfig}
+          handleCopy={handleCopy}
+          handleDownload={handleDownload}
+          handleDownloadVideo={handleDownloadVideo}
+          isExportingVideo={isExportingVideo}
+          exportProgress={exportProgress}
+          postData={postData}
+        />
+      </div>
     </aside>
   );
 };

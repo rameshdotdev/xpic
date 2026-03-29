@@ -48,28 +48,31 @@ export const TweetHeader: React.FC<TweetHeaderProps> = ({
             onChange={onAvatarFileChange} 
           />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-1">
             <input 
               className={cn(
-                "font-bold bg-transparent border-none p-0 focus:ring-0 w-fit min-w-[20px]",
+                "font-bold text-[15px] bg-transparent border-none p-0 focus:ring-0 w-full truncate",
                 config.isDarkMode ? "text-white" : "text-black"
               )}
-              value={postData.name || ''}
+              value={postData.name}
               onChange={(e) => setPostData({ ...postData, name: e.target.value })}
-              style={{ width: `${Math.max((postData.name || '').length, 1)}ch` }}
+              placeholder="Name"
             />
             {config.showVerified && postData.isVerified && (
-              <VerifiedBadge className="-ml-1" />
+              <VerifiedBadge className="shrink-0" />
             )}
           </div>
           {config.showUsername && (
-            <input 
-              className="text-[#536471] text-[15px] bg-transparent border-none p-0 focus:ring-0 w-fit min-w-[20px]"
-              value={postData.handle || ''}
-              onChange={(e) => setPostData({ ...postData, handle: e.target.value })}
-              style={{ width: `${Math.max((postData.handle || '').length, 1)}ch` }}
-            />
+            <div className="flex items-center text-[#536471] text-[15px] w-full">
+              <span className="shrink-0">@</span>
+              <input 
+                className="bg-transparent border-none p-0 focus:ring-0 text-[#536471] w-full truncate"
+                value={postData.handle}
+                onChange={(e) => setPostData({ ...postData, handle: e.target.value })}
+                placeholder="handle"
+              />
+            </div>
           )}
         </div>
       </div>

@@ -24,8 +24,10 @@ Xpics is a powerful, highly customizable tool for creating beautiful, high-quali
 ### 🛠️ Functionality
 - **Real Tweet Fetching**: Simply paste an X/Twitter URL to automatically fetch the post content, user info, and images.
 - **Interactive Editor**: Click and edit any text directly on the card (Name, Handle, Content, Date, Stats).
-- **Media Support**: Upload custom avatars, post images, and **short videos** directly into the visual.
-- **High-Quality Export**: Download your creations as PNG or JPG files with high pixel density.
+- **Media Support**: Upload custom avatars, post images, and **videos** directly into the visual.
+- **Video Export**: Export your visuals as MP4 videos when using video content.
+- **Frame Capture**: Instantly capture a high-quality image from any frame of an uploaded video.
+- **High-Quality Export**: Download your creations as PNG, JPG, or MP4 files with high pixel density.
 - **Quick Share**: One-click "Copy to Clipboard" to quickly paste your visual into other apps.
 
 ## 📖 How to Use
@@ -42,11 +44,12 @@ Xpics is a powerful, highly customizable tool for creating beautiful, high-quali
 
 3. **Edit Content**:
    - Click directly on the text in the preview area to change the Name, Handle, or Tweet content.
-   - Click the avatar or post image area to upload your own media.
+   - Click the avatar, post image, or video area to upload your own media.
+   - If using video, use the **Capture Frame** button to save a specific moment as an image.
 
 4. **Export & Share**:
-   - Click **Download** to save the image to your device.
-   - Click **Copy to Clipboard** for a fast workflow.
+   - Click **Download** to save the image (PNG/JPG) or video (MP4) to your device.
+   - Click **Copy to Clipboard** for a fast image workflow.
 
 ## 🐛 Known Challenges & "The Hardest Bug"
 

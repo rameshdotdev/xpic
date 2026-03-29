@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImageIcon, Video, Camera, X } from 'lucide-react';
+import { ImageIcon, Video, Camera, X, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { PostData } from '../../types';
 
@@ -11,6 +11,7 @@ interface MediaControlsProps {
   captureVideoFrame: () => void;
   postData: PostData;
   setPostData: (data: PostData) => void;
+  isVideoLoading?: boolean;
 }
 
 export const MediaControls: React.FC<MediaControlsProps> = ({
@@ -21,6 +22,7 @@ export const MediaControls: React.FC<MediaControlsProps> = ({
   captureVideoFrame,
   postData,
   setPostData,
+  isVideoLoading = false,
 }) => {
   return (
     <div className="space-y-4">
@@ -49,12 +51,17 @@ export const MediaControls: React.FC<MediaControlsProps> = ({
           <Button 
             variant="outline"
             onClick={() => videoInputRef.current?.click()}
-            className="flex-1 flex items-center justify-center gap-2 py-6 bg-card border-border rounded-xl hover:bg-muted transition-colors shadow-sm font-medium text-sm"
+            disabled={isVideoLoading}
+            className="flex-1 flex items-center justify-center gap-2 py-6 bg-card border-border rounded-xl hover:bg-muted transition-colors shadow-sm font-medium text-sm disabled:opacity-50"
           >
-            <Video className="w-4 h-4 text-muted-foreground" />
-            Video
+            {isVideoLoading ? (
+              <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+            ) : (
+              <Video className="w-4 h-4 text-muted-foreground" />
+            )}
+            {isVideoLoading ? 'Loading...' : 'Video'}
           </Button>
-          {postData.postVideo && (
+          {postData.postVideo && !isVideoLoading && (
             <Button 
               variant="outline"
               onClick={captureVideoFrame}
@@ -64,7 +71,7 @@ export const MediaControls: React.FC<MediaControlsProps> = ({
               <Camera className="w-4 h-4" />
             </Button>
           )}
-          {postData.postVideo && (
+          {postData.postVideo && !isVideoLoading && (
             <Button 
               variant="outline"
               onClick={() => setPostData({ ...postData, postVideo: undefined })}
