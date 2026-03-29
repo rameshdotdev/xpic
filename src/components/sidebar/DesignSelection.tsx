@@ -104,7 +104,7 @@ export const BackgroundSelection: React.FC<BackgroundSelectionProps> = ({
   }
 
   return (
-    <div className="space-y-3 p-4 bg-card border border-border rounded-xl">
+    <div className="space-y-4 p-4 bg-card border border-border rounded-xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Palette className="w-4 h-4 text-muted-foreground" />
@@ -115,31 +115,58 @@ export const BackgroundSelection: React.FC<BackgroundSelectionProps> = ({
           style={{ background: config.background }}
         />
       </div>
-      <div className="flex flex-wrap gap-2">
-        {PRESET_BACKGROUNDS.map((bg) => (
+
+      <div className="space-y-2">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Presets</span>
+        <div className="flex flex-wrap gap-2">
+          {PRESET_BACKGROUNDS.map((bg) => (
+            <button
+              key={bg}
+              onClick={() => setConfig({ ...config, background: bg, customBackground: undefined })}
+              className={cn(
+                "w-8 h-8 rounded-full border-2 transition-all hover:scale-110",
+                (config.background === bg && !config.customBackground) ? "border-primary scale-110 shadow-md" : "border-transparent"
+              )}
+              style={{ background: bg }}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Custom Image</span>
+        <div className="flex items-center gap-3">
           <button
-            key={bg}
-            onClick={() => setConfig({ ...config, background: bg, customBackground: undefined })}
+            onClick={() => backgroundInputRef.current?.click()}
             className={cn(
-              "w-8 h-8 rounded-full border-2 transition-all hover:scale-110",
-              (config.background === bg && !config.customBackground) ? "border-primary scale-110 shadow-md" : "border-transparent"
+              "relative w-12 h-12 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center transition-all hover:border-primary overflow-hidden group",
+              config.customBackground ? "border-primary" : ""
             )}
-            style={{ background: bg }}
-          />
-        ))}
-        <button
-          onClick={() => backgroundInputRef.current?.click()}
-          className={cn(
-            "w-8 h-8 rounded-full border-2 border-dashed border-muted-foreground/50 flex items-center justify-center transition-all hover:scale-110 hover:border-primary overflow-hidden",
-            config.customBackground ? "border-primary scale-110 shadow-md" : ""
+          >
+            {config.customBackground ? (
+              <>
+                <img src={config.customBackground} alt="Custom" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <Plus className="w-4 h-4 text-white" />
+                </div>
+              </>
+            ) : (
+              <Plus className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+          <div className="flex-1 space-y-1">
+            <p className="text-xs font-medium">{config.customBackground ? 'Image uploaded' : 'Upload custom image'}</p>
+            <p className="text-[10px] text-muted-foreground">Supports JPG, PNG, WebP</p>
+          </div>
+          {config.customBackground && (
+            <button 
+              onClick={() => setConfig({ ...config, customBackground: undefined })}
+              className="p-1.5 hover:bg-muted rounded-md text-muted-foreground transition-colors"
+            >
+              <Plus className="w-4 h-4 rotate-45" />
+            </button>
           )}
-        >
-          {config.customBackground ? (
-            <img src={config.customBackground} alt="Custom" className="w-full h-full object-cover" />
-          ) : (
-            <Plus className="w-4 h-4 text-muted-foreground" />
-          )}
-        </button>
+        </div>
         <input 
           type="file" 
           ref={backgroundInputRef} 

@@ -32,7 +32,7 @@ export const exportToVideo = async ({
     // Calculate relative position of video
     const relativeX = (videoRect.left - rect.left);
     const relativeY = (videoRect.top - rect.top);
-    const scale = 1.2; 
+    const scale = 2.0; 
     
     const width = Math.floor(rect.width * scale);
     const height = Math.floor(rect.height * scale);
@@ -49,7 +49,7 @@ export const exportToVideo = async ({
           if (node.tagName === 'VIDEO') return false;
           return true;
         },
-        skipFonts: true,
+        cacheBust: true,
       });
 
       return Promise.race([capturePromise, timeoutPromise]) as Promise<string>;
@@ -128,34 +128,48 @@ export const exportToVideo = async ({
       };
 
       // Start from beginning
+      videoElement.pause();
       videoElement.currentTime = 0;
+      videoElement.muted = true;
+      videoElement.playsInline = true;
+      videoElement.crossOrigin = "anonymous";
       
       let isStarted = false;
-      let startTime = Date.now();
+      let startTime = 0;
       const duration = videoElement.duration || 5; 
 
       const onReady = async () => {
         if (isStarted) return;
         isStarted = true;
+        
         videoElement.oncanplay = null;
         videoElement.oncanplaythrough = null;
 
         try {
-          videoElement.muted = true; 
-          videoElement.playsInline = true;
+          // Ensure video is at the start and ready
+          videoElement.currentTime = 0;
           
+          // Wait a bit for the seek to complete
+          await new Promise(resolve => setTimeout(resolve, 500));
+
           await videoElement.play();
           
+          // Wait for actual playback to start with a more robust check
           await new Promise((resolve) => {
+            let attempts = 0;
             const checkPlaying = () => {
+              attempts++;
+              // Check if video is actually progressing
               if (videoElement.currentTime > 0 && !videoElement.paused) {
                 resolve(true);
+              } else if (attempts > 150) { // Increased attempts
+                console.warn("Video playback start timed out, proceeding anyway");
+                resolve(false);
               } else {
                 requestAnimationFrame(checkPlaying);
               }
             };
             checkPlaying();
-            setTimeout(resolve, 3000);
           });
 
           if (recorder.state === 'inactive') {
@@ -164,43 +178,50 @@ export const exportToVideo = async ({
           
           startTime = Date.now(); 
           toast.loading("Recording video frames...", { id: toastId });
-          drawFrame();
+          requestAnimationFrame(drawFrame);
         } catch (err) {
-          toast.error("Playback blocked. Please interact with the page.", { id: toastId });
+          console.error("Video playback error during export:", err);
+          toast.error("Video playback failed. Try interacting with the video first.", { id: toastId });
           reject(err);
         }
       };
 
+      // Ensure video is loaded enough to play
       if (videoElement.readyState >= 3) {
         onReady();
       } else {
         videoElement.oncanplaythrough = onReady;
         videoElement.oncanplay = onReady;
-        setTimeout(() => { if (!isStarted) onReady(); }, 5000);
+        videoElement.load(); // Force load
+        setTimeout(() => { if (!isStarted) onReady(); }, 4000);
       }
 
       const drawFrame = () => {
         if (!isExportingRef.current) return;
 
-        const elapsed = (Date.now() - startTime) / 1000;
+        const now = Date.now();
+        const elapsed = (now - startTime) / 1000;
         const progress = Math.min((elapsed / duration) * 100, 100);
         onProgress(progress);
         
+        // Sync video time if it drifts too much (> 0.5s)
         const timeDiff = Math.abs(videoElement.currentTime - elapsed);
-        if (timeDiff > 0.3) {
+        if (timeDiff > 0.5 && elapsed < duration) {
           videoElement.currentTime = elapsed;
         }
         
+        // Ensure it's playing if it should be
         if (videoElement.paused && !videoElement.ended && elapsed < duration) {
           videoElement.play().catch(() => {});
         }
         
+        // Clear and draw static frame
         ctx.clearRect(0, 0, width, height);
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(frameImg, 0, 0, width, height);
         
+        // Draw video frame
         try {
+          // Check if video is ready to be drawn
           if (videoElement.readyState >= 2 && videoElement.videoWidth > 0) {
             ctx.save();
             const vx = relativeX * scale;
@@ -209,6 +230,7 @@ export const exportToVideo = async ({
             const vh = videoRect.height * scale;
             const radius = 16 * scale; 
             
+            // Create rounded clipping path for video
             ctx.beginPath();
             if ((ctx as any).roundRect) {
               (ctx as any).roundRect(vx, vy, vw, vh, radius);
@@ -221,20 +243,33 @@ export const exportToVideo = async ({
               ctx.closePath();
             }
             ctx.clip();
+            
+            // Draw the video frame
             ctx.drawImage(videoElement, vx, vy, vw, vh);
             ctx.restore();
+          } else {
+            // Fallback: if video isn't ready, draw a black placeholder or the last frame
+            ctx.fillStyle = '#000000';
+            const vx = relativeX * scale;
+            const vy = relativeY * scale;
+            const vw = videoRect.width * scale;
+            const vh = videoRect.height * scale;
+            ctx.fillRect(vx, vy, vw, vh);
           }
         } catch (e) {
-          console.error("Error drawing video frame:", e);
+          console.error("Error drawing video frame to canvas:", e);
         }
 
         if (elapsed < duration && !videoElement.ended) {
           requestAnimationFrame(drawFrame);
         } else {
-          if (recorder.state !== 'inactive') {
-            recorder.stop();
-          }
-          videoElement.pause();
+          // Give it a tiny bit more time to finish the last frame
+          setTimeout(() => {
+            if (recorder.state !== 'inactive') {
+              recorder.stop();
+            }
+            videoElement.pause();
+          }, 300);
         }
       };
     });

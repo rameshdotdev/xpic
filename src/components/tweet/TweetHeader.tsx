@@ -52,9 +52,10 @@ export const TweetHeader: React.FC<TweetHeaderProps> = ({
           <div className="flex items-center gap-1">
             <input 
               className={cn(
-                "font-bold text-[15px] bg-transparent border-none p-0 focus:ring-0 w-full truncate",
+                "font-bold text-[15px] bg-transparent border-none p-0 focus:ring-0 truncate",
                 config.isDarkMode ? "text-white" : "text-black"
               )}
+              style={{ width: `${(postData.name || '').length + 1}ch`, minWidth: '2ch', maxWidth: '100%' }}
               value={postData.name}
               onChange={(e) => setPostData({ ...postData, name: e.target.value })}
               placeholder="Name"
@@ -67,7 +68,8 @@ export const TweetHeader: React.FC<TweetHeaderProps> = ({
             <div className="flex items-center text-[#536471] text-[15px] w-full">
               <span className="shrink-0">@</span>
               <input 
-                className="bg-transparent border-none p-0 focus:ring-0 text-[#536471] w-full truncate"
+                className="bg-transparent border-none p-0 focus:ring-0 text-[#536471] truncate"
+                style={{ width: `${(postData.handle || '').length + 1}ch`, minWidth: '2ch', maxWidth: '100%' }}
                 value={postData.handle}
                 onChange={(e) => setPostData({ ...postData, handle: e.target.value })}
                 placeholder="handle"
