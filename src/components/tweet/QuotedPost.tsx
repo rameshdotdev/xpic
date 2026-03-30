@@ -25,6 +25,7 @@ export const QuotedPost: React.FC<QuotedPostProps> = ({
           alt={postData.quotedPost.name}
           className="w-5 h-5 rounded-full object-cover"
           referrerPolicy="no-referrer"
+          crossOrigin="anonymous"
         />
         <span className={cn("text-[15px] font-bold", config.isDarkMode ? "text-white" : "text-black")}>
           {postData.quotedPost.name}

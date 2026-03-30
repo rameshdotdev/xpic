@@ -1,7 +1,7 @@
 import { PostData } from '../types';
 
 export const fetchTweetData = async (tweetId: string): Promise<PostData> => {
-  const url = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en`;
+  const url = `/api/tweet/${tweetId}`;
   
   const res = await fetch(url).catch((error) => {
     const msg = error instanceof Error ? error.message : String(error);
@@ -40,11 +40,13 @@ export const fetchTweetData = async (tweetId: string): Promise<PostData> => {
     ? 'Unknown Time'
     : dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
+  const proxyImageUrl = (url: string) => `/api/proxy-image?url=${encodeURIComponent(url)}`;
+
   const postData: PostData = {
     name: user.name || user.screen_name || 'Unknown User',
     handle: user.screen_name || 'unknown',
     avatar: user.profile_image_url_https 
-      ? user.profile_image_url_https.replace('_normal', '') 
+      ? proxyImageUrl(user.profile_image_url_https.replace('_normal', '')) 
       : 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
     content: data.text || data.full_text || '',
     date: formattedDate,
@@ -55,7 +57,9 @@ export const fetchTweetData = async (tweetId: string): Promise<PostData> => {
     likes: (data.favorite_count || 0).toLocaleString(),
     bookmarks: (data.bookmark_count || 0).toLocaleString(),
     isVerified: !!user.verified,
-    postImage: data.mediaDetails?.[0]?.media_url_https,
+    postImage: data.mediaDetails?.[0]?.media_url_https 
+      ? proxyImageUrl(data.mediaDetails[0].media_url_https) 
+      : undefined,
   };
 
   if (data.quoted_tweet && 
@@ -70,7 +74,7 @@ export const fetchTweetData = async (tweetId: string): Promise<PostData> => {
       name: qUser.name || qUser.screen_name || 'Unknown User',
       handle: qUser.screen_name || 'unknown',
       avatar: qUser.profile_image_url_https 
-        ? qUser.profile_image_url_https.replace('_normal', '') 
+        ? proxyImageUrl(qUser.profile_image_url_https.replace('_normal', '')) 
         : 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
       content: data.quoted_tweet.text || data.quoted_tweet.full_text || '',
       date: isNaN(qDateObj.getTime()) ? 'Unknown Date' : qDateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),

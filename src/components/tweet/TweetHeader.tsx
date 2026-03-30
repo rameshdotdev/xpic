@@ -36,6 +36,7 @@ export const TweetHeader: React.FC<TweetHeaderProps> = ({
             alt={postData.name}
             className="w-12 h-12 rounded-full object-cover border border-border/50"
             referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
           />
           <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <span className="text-[10px] text-white font-bold uppercase">Edit</span>

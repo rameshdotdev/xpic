@@ -1,6 +1,7 @@
 import React from 'react';
 import { toPng } from 'html-to-image';
 import { toast } from 'sonner';
+import RecordRTC from 'recordrtc';
 
 interface VideoExportOptions {
   previewRef: React.RefObject<HTMLDivElement | null>;
@@ -17,265 +18,269 @@ export const exportToVideo = async ({
 }: VideoExportOptions): Promise<void> => {
   if (!previewRef.current || !videoUrl) return;
   
-  const videoElement = previewRef.current.querySelector('video');
-  if (!videoElement) {
-    throw new Error("Video element not found in preview");
-  }
-
-  const toastId = toast.loading("Preparing video export...");
+  const toastId = toast.loading("Preparing high-quality export...");
 
   try {
-    // 1. Get dimensions
-    const rect = previewRef.current.getBoundingClientRect();
-    const videoRect = videoElement.getBoundingClientRect();
+    const previewEl = previewRef.current;
+    const naturalWidth = previewEl.offsetWidth;
+    const naturalHeight = previewEl.offsetHeight;
     
-    // Calculate relative position of video
-    const relativeX = (videoRect.left - rect.left);
-    const relativeY = (videoRect.top - rect.top);
-    const scale = 2.0; 
+    const domVideo = previewEl.querySelector('video');
+    if (!domVideo) throw new Error("Video element not found in preview");
     
-    const width = Math.floor(rect.width * scale);
-    const height = Math.floor(rect.height * scale);
+    // 1. Calculate precise coordinates
+    const rect = previewEl.getBoundingClientRect();
+    const videoRect = domVideo.getBoundingClientRect();
+    const uiScale = rect.width / naturalWidth;
+    
+    const relX = (videoRect.left - rect.left) / uiScale;
+    const relY = (videoRect.top - rect.top) / uiScale;
+    const relW = videoRect.width / uiScale;
+    const relH = videoRect.height / uiScale;
 
-    // 2. Capture static frame (everything except the video)
+    const exportScale = 2.0; 
+    const width = Math.floor(naturalWidth * exportScale);
+    const height = Math.floor(naturalHeight * exportScale);
+
+    // 2. Setup Export Video (Visible but small to prevent throttling)
+    const exportVideo = document.createElement('video');
+    exportVideo.style.position = 'fixed';
+    exportVideo.style.bottom = '20px';
+    exportVideo.style.right = '20px';
+    exportVideo.style.width = '240px';
+    exportVideo.style.height = '135px';
+    exportVideo.style.zIndex = '10000';
+    exportVideo.style.opacity = '0.5'; // More visible to prevent throttling
+    exportVideo.style.borderRadius = '12px';
+    exportVideo.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+    exportVideo.style.border = '2px solid rgba(255,255,255,0.2)';
+    exportVideo.muted = true;
+    exportVideo.playsInline = true;
+    exportVideo.crossOrigin = "anonymous";
+    
+    // Add a label so user knows what it is
+    const label = document.createElement('div');
+    label.innerText = "EXPORT PREVIEW - DO NOT CLOSE";
+    label.style.position = 'fixed';
+    label.style.bottom = '160px';
+    label.style.right = '20px';
+    label.style.zIndex = '10001';
+    label.style.background = 'black';
+    label.style.color = 'white';
+    label.style.padding = '4px 8px';
+    label.style.fontSize = '10px';
+    label.style.fontWeight = 'bold';
+    label.style.borderRadius = '4px';
+    
+    document.body.appendChild(exportVideo);
+    document.body.appendChild(label);
+    
+    let localVideoUrl = videoUrl;
+    let isBlobUrl = false;
+
+    // 3. Pre-fetch video as Blob
+    if (videoUrl.startsWith('http') || videoUrl.startsWith('data:')) {
+      try {
+        toast.loading(videoUrl.startsWith('data:') ? "Processing local video..." : "Optimizing video...", { id: toastId });
+        const response = await fetch(videoUrl);
+        if (response.ok) {
+          const blob = await response.blob();
+          localVideoUrl = URL.createObjectURL(blob);
+          isBlobUrl = true;
+        }
+      } catch (e) {
+        console.warn("Video pre-fetch failed:", e);
+      }
+    }
+
+    exportVideo.src = localVideoUrl;
+
+    // 4. Capture static background
     const captureFrame = async () => {
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Capture timed out")), 15000)
-      );
-      
-      const capturePromise = toPng(previewRef.current!, { 
-        pixelRatio: scale,
+      return await toPng(previewEl, { 
+        pixelRatio: exportScale,
         filter: (node: any) => {
           if (node.tagName === 'VIDEO') return false;
+          if (node.classList?.contains('export-overlay')) return false;
           return true;
         },
         cacheBust: true,
       });
-
-      return Promise.race([capturePromise, timeoutPromise]) as Promise<string>;
     };
 
     const frameDataUrl = await captureFrame();
     const frameImg = new window.Image();
     frameImg.src = frameDataUrl;
-    await new Promise(resolve => frameImg.onload = resolve);
+    await new Promise((resolve) => { frameImg.onload = resolve; });
 
-    // 3. Setup Canvas and Recorder
+    // 5. Setup Canvas
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error("Could not get canvas context");
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) throw new Error("Canvas context failed");
 
-    const stream = canvas.captureStream(30); 
-    
-    // Add audio track if available
-    try {
-      if ((videoElement as any).captureStream) {
-        const videoStream = (videoElement as any).captureStream();
-        const audioTracks = videoStream.getAudioTracks();
-        if (audioTracks.length > 0) {
-          stream.addTrack(audioTracks[0]);
-        }
-      }
-    } catch (e) {
-      console.warn("Could not capture audio track:", e);
-    }
-
+    // 6. Setup Recording
     const supportedMimeTypes = [
-      'video/webm;codecs=vp9,opus',
-      'video/webm;codecs=vp8,opus',
+      'video/webm;codecs=vp9',
+      'video/webm;codecs=vp8',
       'video/webm',
       'video/mp4'
     ];
     
-    let mimeType = supportedMimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || '';
+    const mimeType = supportedMimeTypes.find(type => {
+      try {
+        return (window as any).MediaRecorder && (window as any).MediaRecorder.isTypeSupported(type);
+      } catch (e) {
+        return false;
+      }
+    }) || 'video/webm';
 
-    const recorder = new MediaRecorder(stream, {
-      mimeType: mimeType,
-      videoBitsPerSecond: 8000000 
+    const recorder = new RecordRTC(canvas, {
+      type: 'canvas',
+      mimeType: mimeType as any,
+      bitsPerSecond: 15000000,
+      fps: 30,
     });
 
-    const chunks: Blob[] = [];
-    recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) {
-        chunks.push(e.data);
-      }
-    };
-    
-    // 4. Recording Loop
     return new Promise<void>((resolve, reject) => {
-      recorder.onstop = () => {
-        if (chunks.length === 0) {
-          toast.error("No video data recorded", { id: toastId });
-          reject(new Error("No video data recorded"));
-          return;
-        }
-        const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-        link.download = `xpic-video-${Date.now()}.${extension}`;
-        link.href = url;
-        link.click();
-        toast.success("Video exported!", { id: toastId });
-        resolve();
-      };
-
-      recorder.onerror = (e) => {
-        toast.error("Video export failed", { id: toastId });
-        reject(e);
-      };
-
-      // Start from beginning
-      videoElement.pause();
-      videoElement.currentTime = 0;
-      videoElement.muted = true;
-      videoElement.playsInline = true;
-      videoElement.crossOrigin = "anonymous";
-      
       let isStarted = false;
-      let startTime = 0;
-      const duration = videoElement.duration || 5; 
+      let lastVideoTime = -1;
+      let stuckFrames = 0;
+      let frameRequestId: number | null = null;
 
-      const onReady = async () => {
+      const cleanup = () => {
+        if (frameRequestId !== null) cancelAnimationFrame(frameRequestId);
+        if (isBlobUrl) URL.revokeObjectURL(localVideoUrl);
+        exportVideo.pause();
+        exportVideo.src = "";
+        if (exportVideo.parentNode) document.body.removeChild(exportVideo);
+        if (label.parentNode) document.body.removeChild(label);
+      };
+
+      const startRecording = async () => {
         if (isStarted) return;
         isStarted = true;
-        
-        videoElement.oncanplay = null;
-        videoElement.oncanplaythrough = null;
 
         try {
-          // Ensure video is at the start and ready
-          videoElement.currentTime = 0;
-          
-          // Wait a bit for the seek to complete
-          await new Promise(resolve => setTimeout(resolve, 500));
-
-          await videoElement.play();
-          
-          // Wait for actual playback to start with a more robust check
-          await new Promise((resolve) => {
-            let attempts = 0;
-            const checkPlaying = () => {
-              attempts++;
-              // Check if video is actually progressing
-              if (videoElement.currentTime > 0 && !videoElement.paused) {
-                resolve(true);
-              } else if (attempts > 150) { // Increased attempts
-                console.warn("Video playback start timed out, proceeding anyway");
-                resolve(false);
-              } else {
-                requestAnimationFrame(checkPlaying);
-              }
+          // Ensure video is at start
+          exportVideo.currentTime = 0;
+          await new Promise(r => {
+            const onSeeked = () => {
+              exportVideo.removeEventListener('seeked', onSeeked);
+              r(null);
             };
-            checkPlaying();
+            exportVideo.addEventListener('seeked', onSeeked);
+            setTimeout(onSeeked, 2000);
           });
-
-          if (recorder.state === 'inactive') {
-            recorder.start(); 
-          }
           
-          startTime = Date.now(); 
-          toast.loading("Recording video frames...", { id: toastId });
-          requestAnimationFrame(drawFrame);
-        } catch (err) {
-          console.error("Video playback error during export:", err);
-          toast.error("Video playback failed. Try interacting with the video first.", { id: toastId });
-          reject(err);
-        }
-      };
+          try {
+            await exportVideo.play();
+          } catch (err) {
+            console.warn("Autoplay blocked, will force play in loop:", err);
+          }
 
-      // Ensure video is loaded enough to play
-      if (videoElement.readyState >= 3) {
-        onReady();
-      } else {
-        videoElement.oncanplaythrough = onReady;
-        videoElement.oncanplay = onReady;
-        videoElement.load(); // Force load
-        setTimeout(() => { if (!isStarted) onReady(); }, 4000);
-      }
+          recorder.startRecording();
+          const duration = exportVideo.duration || 5;
+          toast.loading("Recording high-quality video...", { id: toastId });
 
-      const drawFrame = () => {
-        if (!isExportingRef.current) return;
+          const vx = relX * exportScale;
+          const vy = relY * exportScale;
+          const vw = relW * exportScale;
+          const vh = relH * exportScale;
+          const radius = 16 * exportScale;
 
-        const now = Date.now();
-        const elapsed = (now - startTime) / 1000;
-        const progress = Math.min((elapsed / duration) * 100, 100);
-        onProgress(progress);
-        
-        // Sync video time if it drifts too much (> 0.5s)
-        const timeDiff = Math.abs(videoElement.currentTime - elapsed);
-        if (timeDiff > 0.5 && elapsed < duration) {
-          videoElement.currentTime = elapsed;
-        }
-        
-        // Ensure it's playing if it should be
-        if (videoElement.paused && !videoElement.ended && elapsed < duration) {
-          videoElement.play().catch(() => {});
-        }
-        
-        // Clear and draw static frame
-        ctx.clearRect(0, 0, width, height);
-        ctx.drawImage(frameImg, 0, 0, width, height);
-        
-        // Draw video frame
-        try {
-          // Check if video is ready to be drawn
-          if (videoElement.readyState >= 2 && videoElement.videoWidth > 0) {
+          const renderLoop = () => {
+            if (!isExportingRef.current) {
+              recorder.stopRecording(() => {
+                cleanup();
+                resolve();
+              });
+              return;
+            }
+
+            // Progress based on video time
+            const progress = Math.min((exportVideo.currentTime / duration) * 100, 100);
+            onProgress(progress);
+
+            // Heartbeat: Check if video is stuck
+            if (exportVideo.currentTime === lastVideoTime && !exportVideo.paused && !exportVideo.ended) {
+              stuckFrames++;
+              if (stuckFrames > 30) { // Stuck for ~1s
+                console.warn("Video stuck, attempting to kickstart...");
+                exportVideo.currentTime += 0.01;
+                exportVideo.play().catch(() => {});
+                stuckFrames = 0;
+              }
+            } else {
+              stuckFrames = 0;
+            }
+            lastVideoTime = exportVideo.currentTime;
+
+            // Ensure it's playing if it should be
+            if (exportVideo.paused && !exportVideo.ended && exportVideo.currentTime < duration) {
+              exportVideo.play().catch(() => {});
+            }
+
+            // Draw background
+            ctx.drawImage(frameImg, 0, 0, width, height);
+
+            // Draw video
             ctx.save();
-            const vx = relativeX * scale;
-            const vy = relativeY * scale;
-            const vw = videoRect.width * scale;
-            const vh = videoRect.height * scale;
-            const radius = 16 * scale; 
-            
-            // Create rounded clipping path for video
             ctx.beginPath();
             if ((ctx as any).roundRect) {
               (ctx as any).roundRect(vx, vy, vw, vh, radius);
             } else {
-              ctx.moveTo(vx + radius, vy);
-              ctx.arcTo(vx + vw, vy, vx + vw, vy + vh, radius);
-              ctx.arcTo(vx + vw, vy + vh, vx, vy + vh, radius);
-              ctx.arcTo(vx, vy + vh, vx, vy, radius);
-              ctx.arcTo(vx, vy, vx + vw, vy, radius);
-              ctx.closePath();
+              ctx.rect(vx, vy, vw, vh);
             }
             ctx.clip();
-            
-            // Draw the video frame
-            ctx.drawImage(videoElement, vx, vy, vw, vh);
-            ctx.restore();
-          } else {
-            // Fallback: if video isn't ready, draw a black placeholder or the last frame
-            ctx.fillStyle = '#000000';
-            const vx = relativeX * scale;
-            const vy = relativeY * scale;
-            const vw = videoRect.width * scale;
-            const vh = videoRect.height * scale;
-            ctx.fillRect(vx, vy, vw, vh);
-          }
-        } catch (e) {
-          console.error("Error drawing video frame to canvas:", e);
-        }
 
-        if (elapsed < duration && !videoElement.ended) {
-          requestAnimationFrame(drawFrame);
-        } else {
-          // Give it a tiny bit more time to finish the last frame
-          setTimeout(() => {
-            if (recorder.state !== 'inactive') {
-              recorder.stop();
+            if (exportVideo.readyState >= 2) {
+              ctx.drawImage(exportVideo, vx, vy, vw, vh);
+            } else {
+              ctx.fillStyle = '#000';
+              ctx.fillRect(vx, vy, vw, vh);
             }
-            videoElement.pause();
-          }, 300);
+            ctx.restore();
+
+            if (!exportVideo.ended && exportVideo.currentTime < duration) {
+              frameRequestId = requestAnimationFrame(renderLoop);
+            } else {
+              // Finish recording
+              recorder.stopRecording(() => {
+                const blob = recorder.getBlob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+                a.download = `xpic-video-${Date.now()}.${extension}`;
+                a.click();
+                
+                cleanup();
+                toast.success("Video exported successfully!", { id: toastId });
+                resolve();
+              });
+            }
+          };
+
+          renderLoop();
+        } catch (err) {
+          cleanup();
+          reject(err);
         }
       };
+
+      if (exportVideo.readyState >= 2) {
+        startRecording();
+      } else {
+        exportVideo.oncanplay = startRecording;
+        exportVideo.load();
+        setTimeout(() => { if (!isStarted) startRecording(); }, 8000);
+      }
     });
 
   } catch (err) {
-    toast.error("Failed to export video", { id: toastId });
+    toast.error("Export failed", { id: toastId });
     throw err;
   }
 };
