@@ -44,6 +44,7 @@ import { CustomizationControls } from './sidebar/CustomizationControls';
 import { QuotedPostControls } from './sidebar/QuotedPostControls';
 import { ActionButtons } from './sidebar/ActionButtons';
 import { StatsControls } from './sidebar/StatsControls';
+import { VideoExportControls } from './sidebar/VideoExportControls';
 
 export function Toggle({ 
   icon, 
@@ -167,7 +168,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   DEFAULT_POST
 }) => {
   return (
-    <aside className="space-y-6">
+    <aside className="space-y-6 lg:sticky lg:top-24 max-h-[calc(100vh-100px)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-bold tracking-tight">X Screenshot</h1>
         <button 
@@ -183,11 +184,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
               showResponses: true,
               padding: 64,
               rounded: 24,
+              cardShadow: 40,
+              cardOpacity: 100,
               exportFormat: 'png',
               showQuotedPost: false,
               customWidth: 600,
               customHeight: 600,
               showBackground: true,
+              videoExportOptions: {
+                frameRate: 30,
+                bitrate: 30000000,
+                codec: 'video/webm;codecs=vp9,opus',
+                exportScale: 3.0,
+              }
             });
             setPostData(DEFAULT_POST);
           }}
@@ -268,6 +277,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
               quotedAvatarInputRef={quotedAvatarInputRef}
               handleQuotedAvatarUpload={handleQuotedAvatarUpload}
               config={config}
+            />
+          </CollapsibleSection>
+        )}
+
+        {postData.postVideo && (
+          <CollapsibleSection title="Video Export" icon={<Video className="w-4 h-4" />}>
+            <VideoExportControls 
+              config={config}
+              setConfig={setConfig}
             />
           </CollapsibleSection>
         )}

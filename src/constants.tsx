@@ -29,10 +29,11 @@ export const ASPECT_RATIOS: { label: string; value: AspectRatio; ratio: number }
   { label: 'Landscape (16:9)', value: '16:9', ratio: 16 / 9 },
   { label: 'Portrait (9:16)', value: '9:16', ratio: 9 / 16 },
   { label: 'Classic (4:3)', value: '4:3', ratio: 4 / 3 },
-  { label: 'Instagram Feed', value: 'instagramFeed', ratio: 1 },
+  { label: 'Golden (1.618:1)', value: 'linkedinPost', ratio: 1.618 },
+  { label: 'Instagram Feed', value: 'instagramFeed', ratio: 4 / 5 },
   { label: 'Instagram Stories', value: 'instagramStories', ratio: 9 / 16 },
   { label: 'LinkedIn Post', value: 'linkedinPost', ratio: 1.91 / 1 },
-  { label: 'Twitter Profile Cover', value: 'twitterProfileCover', ratio: 3 / 1 },
+  { label: 'Twitter Header', value: 'twitterProfileCover', ratio: 3 / 1 },
   { label: 'Custom', value: 'custom', ratio: 1 },
 ];
 

@@ -8,6 +8,12 @@ interface VideoExportOptions {
   videoUrl: string;
   onProgress: (progress: number) => void;
   isExportingRef: React.MutableRefObject<boolean>;
+  options?: {
+    frameRate: number;
+    bitrate: number;
+    codec: string;
+    exportScale: number;
+  };
 }
 
 export const exportToVideo = async ({
@@ -15,6 +21,7 @@ export const exportToVideo = async ({
   videoUrl,
   onProgress,
   isExportingRef,
+  options,
 }: VideoExportOptions): Promise<void> => {
   if (!previewRef.current || !videoUrl) return;
   
@@ -38,7 +45,7 @@ export const exportToVideo = async ({
     const relW = videoRect.width / uiScale;
     const relH = videoRect.height / uiScale;
 
-    const exportScale = 2.0; 
+    const exportScale = options?.exportScale || 3.0; 
     const width = Math.floor(naturalWidth * exportScale);
     const height = Math.floor(naturalHeight * exportScale);
 
@@ -120,28 +127,24 @@ export const exportToVideo = async ({
     canvas.height = height;
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error("Canvas context failed");
+    
+    // Set high quality smoothing
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     // Draw initial frame to "warm up" the canvas
     ctx.drawImage(frameImg, 0, 0, width, height);
 
     // 6. Setup Recording
-    const supportedMimeTypes = [
-      'video/webm;codecs=vp9,opus',
-      'video/webm;codecs=vp8,opus',
-      'video/webm',
-      'video/mp4'
-    ];
+    const mimeType = options?.codec || 'video/webm;codecs=vp9,opus';
     
-    const mimeType = supportedMimeTypes.find(type => {
-      try {
-        return (window as any).MediaRecorder && (window as any).MediaRecorder.isTypeSupported(type);
-      } catch (e) {
-        return false;
-      }
-    }) || 'video/webm';
+    // Fallback if requested codec is not supported
+    const finalMimeType = (window as any).MediaRecorder && (window as any).MediaRecorder.isTypeSupported(mimeType)
+      ? mimeType
+      : 'video/webm';
 
     // Capture stream AFTER initial draw
-    const canvasStream = canvas.captureStream(30);
+    const canvasStream = canvas.captureStream(options?.frameRate || 30);
     let audioContext: AudioContext | null = null;
     let audioDestination: MediaStream | null = null;
     
@@ -168,11 +171,12 @@ export const exportToVideo = async ({
 
     const recorder = new RecordRTC(streams, {
       type: 'video',
-      mimeType: mimeType as any,
+      mimeType: finalMimeType as any,
       recorderType: (RecordRTC as any).MultiStreamRecorder,
-      bitsPerSecond: 15000000,
-      videoBitsPerSecond: 15000000,
-      audioBitsPerSecond: 128000,
+      bitsPerSecond: options?.bitrate || 30000000,
+      videoBitsPerSecond: options?.bitrate || 30000000,
+      audioBitsPerSecond: 192000,
+      frameRate: options?.frameRate || 30,
     });
 
     return new Promise<void>((resolve, reject) => {
@@ -292,7 +296,7 @@ export const exportToVideo = async ({
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+                const extension = finalMimeType.includes('mp4') ? 'mp4' : 'webm';
                 a.download = `xpic-video-${Date.now()}.${extension}`;
                 a.click();
                 

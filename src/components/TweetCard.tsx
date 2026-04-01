@@ -39,7 +39,13 @@ export const TweetCard: React.FC<TweetCardProps> = ({
         "w-full max-w-[500px] p-6 shadow-2xl transition-colors duration-300 overflow-hidden",
         config.isDarkMode ? "bg-[#000000] text-white" : "bg-white text-[#0F1419]"
       )}
-      style={{ borderRadius: `${config.rounded}px` }}
+      style={{ 
+        borderRadius: `${config.rounded}px`,
+        boxShadow: `0 ${config.cardShadow / 2}px ${config.cardShadow}px rgba(0,0,0,${config.cardShadow / 200})`,
+        backgroundColor: config.isDarkMode 
+          ? `rgba(0, 0, 0, ${config.cardOpacity / 100})` 
+          : `rgba(255, 255, 255, ${config.cardOpacity / 100})`
+      }}
     >
       <TweetHeader 
         postData={postData}

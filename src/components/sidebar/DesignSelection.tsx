@@ -17,7 +17,7 @@ export const DesignSwitcher: React.FC<DesignSwitcherProps> = ({
     <div className="flex items-center gap-3 bg-card/50 p-1.5 rounded-2xl border border-border/50 backdrop-blur-sm shadow-sm">
       {/* Design 1: Only Tweet */}
       <button
-        onClick={() => setConfig({ ...config, showBackground: false })}
+        onClick={() => setConfig(prev => ({ ...prev, showBackground: false }))}
         className={cn(
           "relative flex-1 aspect-[16/10] min-w-[100px] bg-card border-2 rounded-xl transition-all overflow-hidden group",
           !config.showBackground ? "border-primary ring-4 ring-primary/10" : "border-border hover:border-muted-foreground/30"
@@ -44,7 +44,7 @@ export const DesignSwitcher: React.FC<DesignSwitcherProps> = ({
 
       {/* Design 2: With Background */}
       <button
-        onClick={() => setConfig({ ...config, showBackground: true })}
+        onClick={() => setConfig(prev => ({ ...prev, showBackground: true }))}
         className={cn(
           "relative flex-1 aspect-[16/10] min-w-[100px] bg-muted border-2 rounded-xl transition-all overflow-hidden group",
           config.showBackground ? "border-primary ring-4 ring-primary/10" : "border-border hover:border-muted-foreground/30"
@@ -94,7 +94,7 @@ export const BackgroundSelection: React.FC<BackgroundSelectionProps> = ({
           <p className="text-xs text-muted-foreground">Enable "With Background" design to customize styles.</p>
         </div>
         <button 
-          onClick={() => setConfig({ ...config, showBackground: true })}
+          onClick={() => setConfig(prev => ({ ...prev, showBackground: true }))}
           className="text-xs font-bold text-primary hover:underline"
         >
           Enable Background
@@ -122,7 +122,7 @@ export const BackgroundSelection: React.FC<BackgroundSelectionProps> = ({
           {PRESET_BACKGROUNDS.map((bg) => (
             <button
               key={bg}
-              onClick={() => setConfig({ ...config, background: bg, customBackground: undefined })}
+              onClick={() => setConfig(prev => ({ ...prev, background: bg, customBackground: undefined }))}
               className={cn(
                 "w-8 h-8 rounded-full border-2 transition-all hover:scale-110",
                 (config.background === bg && !config.customBackground) ? "border-primary scale-110 shadow-md" : "border-transparent"
@@ -160,7 +160,7 @@ export const BackgroundSelection: React.FC<BackgroundSelectionProps> = ({
           </div>
           {config.customBackground && (
             <button 
-              onClick={() => setConfig({ ...config, customBackground: undefined })}
+              onClick={() => setConfig(prev => ({ ...prev, customBackground: undefined }))}
               className="p-1.5 hover:bg-muted rounded-md text-muted-foreground transition-colors"
             >
               <Plus className="w-4 h-4 rotate-45" />

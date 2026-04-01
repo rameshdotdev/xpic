@@ -42,9 +42,17 @@ export interface Config {
   showResponses: boolean;
   padding: number;
   rounded: number;
+  cardShadow: number;
+  cardOpacity: number;
   exportFormat: ExportFormat;
   showQuotedPost: boolean;
   customWidth: number;
   customHeight: number;
   showBackground: boolean;
+  videoExportOptions?: {
+    frameRate: number;
+    bitrate: number;
+    codec: string;
+    exportScale: number;
+  };
 }

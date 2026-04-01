@@ -34,7 +34,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         </div>
         <Select 
           value={config.exportFormat}
-          onValueChange={(val) => setConfig({ ...config, exportFormat: val as ExportFormat })}
+          onValueChange={(val) => setConfig(prev => ({ ...prev, exportFormat: val as ExportFormat }))}
         >
           <SelectTrigger className="w-[100px] border-none bg-muted/50 focus:ring-0 h-auto px-3 py-1.5 text-right font-medium text-muted-foreground rounded-lg transition-colors hover:bg-muted">
             <SelectValue placeholder="Format" />

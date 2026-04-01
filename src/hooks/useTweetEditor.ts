@@ -26,11 +26,19 @@ export function useTweetEditor(theme: string | undefined) {
     showResponses: true,
     padding: 64,
     rounded: 24,
+    cardShadow: 40,
+    cardOpacity: 100,
     exportFormat: 'png',
     showQuotedPost: false,
     customWidth: 600,
     customHeight: 600,
     showBackground: true,
+    videoExportOptions: {
+      frameRate: 30,
+      bitrate: 30000000,
+      codec: 'video/webm;codecs=vp9',
+      exportScale: 3.0,
+    }
   });
 
   const previewRef = useRef<HTMLDivElement>(null);
@@ -204,6 +212,7 @@ export function useTweetEditor(theme: string | undefined) {
         videoUrl: postData.postVideo,
         onProgress: setExportProgress,
         isExportingRef,
+        options: config.videoExportOptions,
       });
     } catch (err) {
       console.error('Video export failed:', err);
