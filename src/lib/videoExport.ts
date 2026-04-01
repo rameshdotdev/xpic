@@ -54,9 +54,10 @@ export const exportToVideo = async ({
     exportVideo.style.borderRadius = '12px';
     exportVideo.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
     exportVideo.style.border = '2px solid rgba(255,255,255,0.2)';
-    exportVideo.muted = true;
+    exportVideo.muted = true; // Start muted to ensure play() works
     exportVideo.playsInline = true;
     exportVideo.crossOrigin = "anonymous";
+    exportVideo.loop = false;
     
     // Add a label so user knows what it is
     const label = document.createElement('div');
@@ -120,10 +121,13 @@ export const exportToVideo = async ({
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error("Canvas context failed");
 
+    // Draw initial frame to "warm up" the canvas
+    ctx.drawImage(frameImg, 0, 0, width, height);
+
     // 6. Setup Recording
     const supportedMimeTypes = [
-      'video/webm;codecs=vp9',
-      'video/webm;codecs=vp8',
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
       'video/webm',
       'video/mp4'
     ];
@@ -136,11 +140,39 @@ export const exportToVideo = async ({
       }
     }) || 'video/webm';
 
-    const recorder = new RecordRTC(canvas, {
-      type: 'canvas',
+    // Capture stream AFTER initial draw
+    const canvasStream = canvas.captureStream(30);
+    let audioContext: AudioContext | null = null;
+    let audioDestination: MediaStream | null = null;
+    
+    try {
+      const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+      audioContext = new AudioContextClass();
+      const source = audioContext.createMediaElementSource(exportVideo);
+      const destination = audioContext.createMediaStreamDestination();
+      source.connect(destination);
+      audioDestination = destination.stream;
+      
+      // Unmute so audio flows into the source node
+      exportVideo.muted = false;
+      exportVideo.volume = 1.0;
+    } catch (e) {
+      console.warn("Audio capture failed, exporting without audio:", e);
+    }
+
+    // Combine canvas and audio streams
+    const streams = [canvasStream];
+    if (audioDestination) {
+      streams.push(audioDestination);
+    }
+
+    const recorder = new RecordRTC(streams, {
+      type: 'video',
       mimeType: mimeType as any,
+      recorderType: (RecordRTC as any).MultiStreamRecorder,
       bitsPerSecond: 15000000,
-      fps: 30,
+      videoBitsPerSecond: 15000000,
+      audioBitsPerSecond: 128000,
     });
 
     return new Promise<void>((resolve, reject) => {
@@ -152,6 +184,7 @@ export const exportToVideo = async ({
       const cleanup = () => {
         if (frameRequestId !== null) cancelAnimationFrame(frameRequestId);
         if (isBlobUrl) URL.revokeObjectURL(localVideoUrl);
+        if (audioContext) audioContext.close().catch(() => {});
         exportVideo.pause();
         exportVideo.src = "";
         if (exportVideo.parentNode) document.body.removeChild(exportVideo);
@@ -163,6 +196,11 @@ export const exportToVideo = async ({
         isStarted = true;
 
         try {
+          // Resume audio context if it's suspended (common in browsers)
+          if (audioContext && audioContext.state === 'suspended') {
+            await audioContext.resume();
+          }
+
           // Ensure video is at start
           exportVideo.currentTime = 0;
           await new Promise(r => {
@@ -176,14 +214,16 @@ export const exportToVideo = async ({
           
           try {
             await exportVideo.play();
+            // Unmute after play starts to ensure audio is captured
+            exportVideo.muted = false;
+            exportVideo.volume = 1.0;
+            // Wait a tiny bit for the video to actually start rendering
+            await new Promise(r => setTimeout(r, 100));
           } catch (err) {
             console.warn("Autoplay blocked, will force play in loop:", err);
           }
 
-          recorder.startRecording();
           const duration = exportVideo.duration || 5;
-          toast.loading("Recording high-quality video...", { id: toastId });
-
           const vx = relX * exportScale;
           const vy = relY * exportScale;
           const vw = relW * exportScale;
@@ -263,7 +303,11 @@ export const exportToVideo = async ({
             }
           };
 
+          // Start render loop BEFORE recording to ensure stream is active
           renderLoop();
+          
+          recorder.startRecording();
+          toast.loading("Recording high-quality video...", { id: toastId });
         } catch (err) {
           cleanup();
           reject(err);
