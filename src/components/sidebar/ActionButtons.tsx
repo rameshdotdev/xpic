@@ -1,8 +1,14 @@
-import React from 'react';
-import { Download, Copy, Coffee, Share2, Video } from 'lucide-react';
+import React from "react";
+import { Download, Copy, Coffee, Share2, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Config, ExportFormat, PostData } from '../../types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Config, ExportFormat, PostData } from "../../types";
 
 interface ActionButtonsProps {
   config: Config;
@@ -32,9 +38,14 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           <Download className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-medium">Export Format</span>
         </div>
-        <Select 
+        <Select
           value={config.exportFormat}
-          onValueChange={(val) => setConfig(prev => ({ ...prev, exportFormat: val as ExportFormat }))}
+          onValueChange={(val) =>
+            setConfig((prev: any) => ({
+              ...prev,
+              exportFormat: val as ExportFormat,
+            }))
+          }
         >
           <SelectTrigger className="w-[100px] border-none bg-muted/50 focus:ring-0 h-auto px-3 py-1.5 text-right font-medium text-muted-foreground rounded-lg transition-colors hover:bg-muted">
             <SelectValue placeholder="Format" />
@@ -47,31 +58,37 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       </div>
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-4 gap-3">
-          <Button 
+          <Button
             variant="outline"
-            onClick={() => window.open('https://www.buymeacoffee.com', '_blank')}
+            onClick={() =>
+              window.open("https://www.buymeacoffee.com", "_blank")
+            }
             className="flex items-center justify-center p-6 bg-card border-border rounded-xl hover:bg-muted transition-colors shadow-sm"
           >
             <Coffee className="w-5 h-5 text-muted-foreground" />
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={handleCopy}
             className="flex items-center justify-center p-6 bg-card border-border rounded-xl hover:bg-muted transition-colors shadow-sm"
           >
             <Copy className="w-5 h-5 text-muted-foreground" />
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={handleDownload}
             disabled={isExportingVideo}
             className="col-span-1 flex items-center justify-center gap-2 p-6 bg-card border-border rounded-xl hover:bg-muted transition-colors shadow-sm font-medium text-sm"
           >
             <Download className="w-5 h-5 text-muted-foreground" />
-            <span className="hidden xl:inline">Download</span>
           </Button>
-          <Button 
-            onClick={() => window.open('https://twitter.com/intent/tweet?text=Check out this X Post Screenshot Generator!', '_blank')}
+          <Button
+            onClick={() =>
+              window.open(
+                "https://twitter.com/intent/tweet?text=Check out this X Post Screenshot Generator!",
+                "_blank",
+              )
+            }
             className="col-span-1 flex items-center justify-center gap-2 p-6 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors shadow-sm font-medium text-sm"
           >
             <Share2 className="w-5 h-5" />
@@ -80,7 +97,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         </div>
 
         {postData.postVideo && (
-          <Button 
+          <Button
             onClick={handleDownloadVideo}
             disabled={isExportingVideo}
             className="w-full flex items-center justify-center gap-2 p-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg shadow-purple-500/20 font-bold"

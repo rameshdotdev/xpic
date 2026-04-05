@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { cn } from '../lib/utils';
-import { TweetCard } from './TweetCard';
-import { DesignSwitcher } from './sidebar/DesignSelection';
-import { PostData, Config } from '../types';
+import React, { useState, useEffect, useRef } from "react";
+import { cn } from "../lib/utils";
+import { TweetCard } from "./TweetCard";
+import { DesignSwitcher } from "./sidebar/DesignSelection";
+import { PostData, Config } from "../types";
 
 interface PreviewAreaProps {
   previewRef: React.RefObject<HTMLDivElement | null>;
@@ -37,10 +37,11 @@ export const PreviewArea: React.FC<PreviewAreaProps> = ({
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth;
         // Base width for scaling calculation - account for some margin
-        const baseWidth = config.showBackground && config.aspectRatio === 'custom' 
-          ? config.customWidth 
-          : 600; 
-        
+        const baseWidth =
+          config.showBackground && config.aspectRatio === "custom"
+            ? config.customWidth
+            : 600;
+
         if (containerWidth < baseWidth) {
           setScale(containerWidth / baseWidth);
         } else {
@@ -50,53 +51,78 @@ export const PreviewArea: React.FC<PreviewAreaProps> = ({
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [config.customWidth, config.showBackground, config.aspectRatio]);
 
   return (
-    <main className="flex flex-col items-center gap-6 w-full" ref={containerRef}>
+    <main
+      className="flex flex-col items-center gap-6 w-full"
+      ref={containerRef}
+    >
       <div className="w-full max-w-md">
         <DesignSwitcher config={config} setConfig={setConfig} />
       </div>
 
-      <div 
+      <div
         className="w-full flex justify-center items-center"
-        style={{ 
-          height: scale < 1 ? 'auto' : 'auto',
-          minHeight: config.showBackground ? '300px' : 'auto'
+        style={{
+          height: scale < 1 ? "auto" : "auto",
+          minHeight: config.showBackground ? "300px" : "auto",
         }}
       >
-        <div 
-          style={{ 
-            transform: `scale(${scale})`, 
-            transformOrigin: 'center center',
-            width: config.showBackground ? (config.aspectRatio === 'custom' ? `${config.customWidth}px` : '600px') : 'auto',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+        <div
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "center center",
+            width: config.showBackground
+              ? config.aspectRatio === "custom"
+                ? `${config.customWidth}px`
+                : "600px"
+              : "auto",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
           className="transition-transform duration-300"
         >
-          <div 
+          <div
             ref={previewRef}
             className={cn(
               "relative overflow-hidden transition-all duration-500 flex-shrink-0",
-              config.showBackground ? "shadow-2xl" : ""
+              config.showBackground ? "shadow-2xl" : "",
             )}
             style={{
-              width: config.showBackground ? (config.aspectRatio === 'custom' ? `${config.customWidth}px` : '100%') : 'auto',
-              height: config.showBackground ? (config.aspectRatio === 'custom' ? `${config.customHeight}px` : 'auto') : 'auto',
-              aspectRatio: (config.showBackground && config.aspectRatio !== 'custom') ? config.aspectRatio.replace(':', '/') : 'auto',
-              background: config.showBackground ? (config.customBackground ? `url(${config.customBackground}) center/cover no-repeat` : config.background) : 'transparent',
-              padding: config.showBackground ? `${config.padding}px` : '0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: config.showBackground ? '32px' : '0',
+              width: config.showBackground
+                ? config.aspectRatio === "custom"
+                  ? `${config.customWidth}px`
+                  : "100%"
+                : "auto",
+              height: config.showBackground
+                ? config.aspectRatio === "custom"
+                  ? `${config.customHeight}px`
+                  : "auto"
+                : "auto",
+              aspectRatio:
+                config.showBackground && config.aspectRatio !== "custom"
+                  ? config.aspectRatio.replace(":", "/")
+                  : "auto",
+              background: config.showBackground
+                ? config.customBackground
+                  ? `url(${config.customBackground}) center/cover no-repeat`
+                  : config.background
+                : "transparent",
+              padding: config.showBackground ? `${config.padding}px` : "0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: config.showBackground
+                ? "32px"
+                : `${config.rounded}px`,
+              // borderRadius: `${config.rounded}px`,
             }}
           >
-            <TweetCard 
+            <TweetCard
               cardRef={cardRef}
               videoRef={videoRef}
               avatarInputRef={avatarInputRef}
