@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '../../lib/utils';
 import { PostData, Config } from '../../types';
 import { VerifiedBadge } from './TweetComponents';
+import { renderTweetText } from '../../lib/textUtils';
 
 interface QuotedPostProps {
   postData: PostData;
@@ -38,10 +39,10 @@ export const QuotedPost: React.FC<QuotedPostProps> = ({
         <span className="text-[#536471] text-[15px]">{postData.quotedPost.date}</span>
       </div>
       <p className={cn(
-        "text-[15px] leading-normal",
+        "text-[15px] leading-normal break-words",
         config.isDarkMode ? "text-white" : "text-black"
       )}>
-        {postData.quotedPost.content}
+        {renderTweetText(postData.quotedPost.content)}
       </p>
     </div>
   );

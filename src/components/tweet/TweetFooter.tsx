@@ -1,7 +1,7 @@
-import React from "react";
-import { Heart, MessageCircle, Repeat2, Share, BarChart2 } from "lucide-react";
-import { cn } from "../../lib/utils";
-import { PostData, Config } from "../../types";
+import React from 'react';
+import { Heart, MessageCircle, Repeat2, Share, BarChart2 } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { PostData, Config } from '../../types';
 
 interface TweetFooterProps {
   postData: PostData;
@@ -15,18 +15,16 @@ export const TweetFooter: React.FC<TweetFooterProps> = ({
   return (
     <div className="space-y-4">
       {config.showDateTime && (
-        <div className="flex items-center gap-1.5 text-[#536471] text-[15px] pt-2">
+        <div className="flex items-center gap-1.5 text-[#536471] text-[15px] py-1">
           <span>{postData.time}</span>
           <span>·</span>
           <span>{postData.date}</span>
           <span>·</span>
           <div className="flex items-center gap-1">
-            <span
-              className={cn(
-                "font-bold",
-                config.isDarkMode ? "text-white" : "text-black",
-              )}
-            >
+            <span className={cn(
+              "font-bold",
+              config.isDarkMode ? "text-white" : "text-black"
+            )}>
               {postData.views}
             </span>
             <span>Views</span>
