@@ -49,6 +49,7 @@ export interface Config {
   customWidth: number;
   customHeight: number;
   showBackground: boolean;
+  fontSize?: number;
   videoExportOptions?: {
     frameRate: number;
     bitrate: number;

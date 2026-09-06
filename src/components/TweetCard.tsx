@@ -36,7 +36,7 @@ export const TweetCard: React.FC<TweetCardProps> = ({
       ref={cardRef}
       layout
       className={cn(
-        "w-full max-w-[500px] p-6 shadow-2xl transition-colors duration-300 overflow-hidden",
+        "w-full max-w-[500px] p-5 shadow-2xl transition-colors duration-300 overflow-hidden",
         config.isDarkMode ? "bg-[#000000] text-white" : "bg-white text-[#0F1419]"
       )}
       style={{ 

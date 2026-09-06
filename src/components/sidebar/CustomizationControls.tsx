@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Maximize2, Layout, CheckCircle2, Sun, Heart, Repeat2 } from 'lucide-react';
+import { Moon, Maximize2, Layout, CheckCircle2, Sun, Heart, Repeat2, Type } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -150,6 +150,43 @@ export const CustomizationControls: React.FC<CustomizationControlsProps> = ({
               )}
             >
               {r === 0 ? 'Sharp' : `${r}px`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-3 bg-card border border-border rounded-xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Type className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-sm font-medium">Font Size</span>
+          </div>
+          <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">{config.fontSize || 17}px</span>
+        </div>
+        <Slider 
+          min={14} 
+          max={26} 
+          step={1}
+          value={[config.fontSize || 17]} 
+          onValueChange={(val) => setConfig(prev => ({ ...prev, fontSize: val[0] }))}
+          className="py-2"
+        />
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          {[
+            { label: 'Small', size: 15 },
+            { label: 'Default', size: 17 },
+            { label: 'Medium', size: 19 },
+            { label: 'Large', size: 22 },
+          ].map(item => (
+            <button
+              key={item.size}
+              onClick={() => setConfig(prev => ({ ...prev, fontSize: item.size }))}
+              className={cn(
+                "text-[10px] font-bold px-2 py-1 rounded border transition-all flex-shrink-0",
+                (config.fontSize || 17) === item.size ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 border-border hover:border-muted-foreground/30"
+              )}
+            >
+              {item.label} ({item.size}px)
             </button>
           ))}
         </div>

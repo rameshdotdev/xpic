@@ -23,10 +23,10 @@ export const TweetHeader: React.FC<TweetHeaderProps> = ({
   onAvatarDrop,
 }) => {
   return (
-    <div className="flex items-start justify-between mb-3">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-3 min-w-0">
         <div 
-          className="relative group cursor-pointer"
+          className="relative group cursor-pointer shrink-0"
           onClick={() => avatarInputRef.current?.click()}
           onDragOver={(e) => e.preventDefault()}
           onDrop={onAvatarDrop}
@@ -34,12 +34,12 @@ export const TweetHeader: React.FC<TweetHeaderProps> = ({
           <img 
             src={postData.avatar} 
             alt={postData.name}
-            className="w-12 h-12 rounded-full object-cover border border-border/50"
+            className="w-10 h-10 rounded-full object-cover border border-border/50"
             referrerPolicy="no-referrer"
             crossOrigin="anonymous"
           />
           <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <span className="text-[10px] text-white font-bold uppercase">Edit</span>
+            <span className="text-[9px] text-white font-bold uppercase">Edit</span>
           </div>
           <input 
             type="file" 
@@ -49,11 +49,11 @@ export const TweetHeader: React.FC<TweetHeaderProps> = ({
             onChange={onAvatarFileChange} 
           />
         </div>
-        <div className="flex flex-col min-w-0 flex-1">
-          <div className="flex items-center gap-1">
+        <div className="flex flex-col justify-center min-w-0 flex-1">
+          <div className="flex items-center gap-1 leading-5">
             <input 
               className={cn(
-                "font-bold text-[15px] bg-transparent border-none p-0 focus:ring-0 truncate",
+                "font-bold text-[15px] leading-5 bg-transparent border-none p-0 focus:ring-0 truncate",
                 config.isDarkMode ? "text-white" : "text-black"
               )}
               style={{ width: `${(postData.name || '').length + 1}ch`, minWidth: '2ch', maxWidth: '100%' }}
@@ -62,14 +62,14 @@ export const TweetHeader: React.FC<TweetHeaderProps> = ({
               placeholder="Name"
             />
             {config.showVerified && postData.isVerified && (
-              <VerifiedBadge className="shrink-0" />
+              <VerifiedBadge className="shrink-0 w-[18px] h-[18px]" />
             )}
           </div>
           {config.showUsername && (
-            <div className="flex items-center text-[#536471] text-[15px] w-full">
+            <div className="flex items-center text-[#536471] text-[15px] leading-5 w-full">
               <span className="shrink-0">@</span>
               <input 
-                className="bg-transparent border-none p-0 focus:ring-0 text-[#536471] truncate"
+                className="bg-transparent border-none p-0 focus:ring-0 text-[#536471] leading-5 truncate"
                 style={{ width: `${(postData.handle || '').length + 1}ch`, minWidth: '2ch', maxWidth: '100%' }}
                 value={postData.handle}
                 onChange={(e) => setPostData({ ...postData, handle: e.target.value })}
@@ -80,7 +80,7 @@ export const TweetHeader: React.FC<TweetHeaderProps> = ({
         </div>
       </div>
       {config.showIcon && (
-        <XLogo className={cn("w-6 h-6", config.isDarkMode ? "text-white" : "text-black")} />
+        <XLogo className={cn("w-5 h-5 shrink-0 ml-2", config.isDarkMode ? "text-white" : "text-black")} />
       )}
     </div>
   );

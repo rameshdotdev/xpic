@@ -33,6 +33,7 @@ export function useTweetEditor(theme: string | undefined) {
     customWidth: 600,
     customHeight: 600,
     showBackground: true,
+    fontSize: 17,
     videoExportOptions: {
       frameRate: 30,
       bitrate: 30000000,

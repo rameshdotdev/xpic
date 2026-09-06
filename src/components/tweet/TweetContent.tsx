@@ -17,13 +17,15 @@ export const TweetContent: React.FC<TweetContentProps> = ({
   videoRef,
 }) => {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const fontSize = config.fontSize || 17;
+  const lineHeight = 1.45;
 
   React.useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  }, [postData.content]);
+  }, [postData.content, fontSize]);
 
   return (
     <div className="space-y-3">
@@ -31,15 +33,18 @@ export const TweetContent: React.FC<TweetContentProps> = ({
         {/* Mirror div for highlighting */}
         <div 
           className={cn(
-            "absolute inset-0 text-[23px] leading-[1.3] p-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden font-sans",
+            "absolute inset-0 p-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden font-sans",
             config.isDarkMode ? "text-white" : "text-black"
           )}
           style={{ 
+            fontSize: `${fontSize}px`,
+            lineHeight: lineHeight,
             fontFamily: 'inherit',
             letterSpacing: 'normal',
             wordSpacing: 'normal',
             textTransform: 'none',
-            textAlign: 'start'
+            textAlign: 'start',
+            boxSizing: 'border-box'
           }}
           aria-hidden="true"
         >
@@ -49,11 +54,14 @@ export const TweetContent: React.FC<TweetContentProps> = ({
         <textarea 
           ref={textareaRef}
           className={cn(
-            "w-full text-[23px] leading-[1.3] bg-transparent border-none p-0 focus:ring-0 resize-none min-h-[40px] overflow-hidden relative z-10 font-sans outline-none",
+            "w-full bg-transparent border-none p-0 focus:ring-0 resize-none overflow-hidden relative z-10 font-sans outline-none",
             "selection:bg-[#1D9BF0]/30",
             config.isDarkMode ? "text-transparent" : "text-transparent"
           )}
           style={{ 
+            fontSize: `${fontSize}px`,
+            lineHeight: lineHeight,
+            minHeight: `${Math.round(fontSize * lineHeight)}px`,
             color: 'transparent',
             caretColor: config.isDarkMode ? 'white' : 'black',
             fontFamily: 'inherit',
