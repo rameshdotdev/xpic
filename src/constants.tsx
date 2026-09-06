@@ -38,10 +38,10 @@ export const ASPECT_RATIOS: { label: string; value: AspectRatio; ratio: number }
 ];
 
 export const DEFAULT_POST: any = {
-  name: 'Publer',
-  handle: 'publer',
-  avatar: 'https://picsum.photos/seed/publer/200/200',
-  content: "Here's an idea 🧐 do something good and don't post about it on social media.\n\nBut if you really can't resist ... post it everywhere using Publer!",
+  name: 'xpic',
+  handle: 'xpic',
+  avatar: 'https://picsum.photos/seed/xpic/200/200',
+  content: "Here's an idea 🧐 do something good and don't post about it on social media.\n\nBut if you really can't resist ... post it everywhere using #xpic!",
   date: '27 Mar, 2026',
   time: '9:21 AM',
   views: '1.1M',
